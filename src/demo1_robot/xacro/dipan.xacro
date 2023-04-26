@@ -1,0 +1,119 @@
+<robot name="my_car" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <xacro:property name="base_footprint_size" value="0.001 0.001 0.001" />
+
+    <link name="base_footprint">
+        <visual>
+            <geometry>
+                <box size="${base_footprint_size}" />
+            </geometry>
+        </visual>
+    </link>
+
+    <xacro:property name="base_link_radius" value="0.1" />
+    <xacro:property name="base_link_length" value="0.08" />
+    <xacro:property name="lidi" value="0.015" />
+    <xacro:property name="base_link_m" value="0.5" />
+
+    <link name="base_link">
+        <visual>
+            <geometry>
+                <cylinder radius="${base_link_radius}" length="${base_link_length}" />
+            </geometry>
+            <material name="yellow">
+                <color rgba="0.8 0.3 0.1 0.5" />
+            </material>
+        </visual>
+        <collision>
+            <geometry>
+                <cylinder radius="${base_link_radius}" length="${base_link_length}" />
+            </geometry>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+        </collision>
+        <xacro:cylinder_inertial_matrix m="${base_link_m}" r="${base_link_radius}" h="${base_link_length}" />
+    </link>
+
+    <joint name="base_footprint2base_link" type="fixed">
+        <parent link="base_footprint" />
+        <child link ="base_link" />
+        <origin xyz="0 0 ${lidi+base_link_length/2}" />
+    </joint>
+    <gazebo reference="base_link">
+        <material>Gazebo/Yellow</material>
+    </gazebo>
+
+    <xacro:property name="qudong_wheel_radius" value="0.0325" />
+    <xacro:property name="qudong_wheel_length" value="0.015" />
+    <xacro:property name="PI" value="3.1415926" />
+    <xacro:property name="wheel_mass" value="0.1" />
+    
+    <xacro:macro name="wheel_func" params="wheel_name flag">
+        <link name="${wheel_name}_wheel">
+            <visual>
+                <geometry>
+                    <cylinder radius="${qudong_wheel_radius}" length="${qudong_wheel_length}" />
+                </geometry>
+                <origin xyz="0 0 0" rpy="${PI/2} 0 0" />
+                <material name="black">
+                    <color rgba="0 0 0 1" />
+                </material>
+            </visual>
+            <collision>
+                <geometry>
+                    <cylinder radius="${qudong_wheel_radius}" length="${qudong_wheel_length}" />
+                </geometry>
+                <origin xyz="0 0 0" rpy="${PI/2} 0 0" />
+            </collision>
+            <xacro:cylinder_inertial_matrix m="${wheel_mass}" r="${qudong_wheel_radius}" h="${qudong_wheel_length}" />
+        </link>
+  
+        <joint name="${wheel_name}_wheel2base_link" type="continuous">
+            <parent link="base_link" />
+            <child link="${wheel_name}_wheel" />
+            <origin xyz="0 ${flag*(base_link_radius+qudong_wheel_length/2)} ${-(lidi+base_link_length / 2-qudong_wheel_radius)}" /> 
+            <axis xyz="0 1 0" />
+        </joint>
+        <gazebo reference="${wheel_name}_wheel">
+            <material>Gazebo/Red</material>
+        </gazebo>
+    </xacro:macro>
+
+
+    <xacro:wheel_func wheel_name="left" flag="1" />
+    <xacro:wheel_func wheel_name="right" flag="-1" /> 
+
+    <xacro:property name="wanxianglun_radius" value="0.0075" />
+    <xacro:property name="wanxianglun_mass" value="0.03" />    
+
+    <xacro:macro name="wanxianglun_func" params="name flag">
+        <link name="${name}_wheel">
+            <visual>
+                <geometry>
+                    <sphere radius="${wanxianglun_radius}" />
+                </geometry>
+                <material name="black">
+                    <color rgba="0 0 0 1" />
+                </material>
+            </visual>
+            <collision>
+                <geometry>
+                    <sphere radius="${wanxianglun_radius}" />
+                </geometry>
+                <origin xyz="0 0 0" rpy="0 0 0" /> 
+            </collision>
+            <xacro:sphere_inertial_matrix m="${wanxianglun_mass}" r="${wanxianglun_radius}" />
+        </link>
+
+        <joint name="${name}_wheel2base_link" type="continuous">
+            <parent link="base_link" />
+            <child link="${name}_wheel" />
+            <origin xyz="${flag*(base_link_radius-wanxianglun_radius)} 0 ${-(base_link_length/2+lidi/2)}" />
+            <axis xyz="1 1 1" />
+        </joint>
+        <gazebo reference="${name}_wheel">
+            <material>Gazebo/Red</material>
+        </gazebo>
+    </xacro:macro>
+    <xacro:wanxianglun_func name="front" flag="-1" />
+    <xacro:wanxianglun_func name="behind" flag="1" />
+</robot>
